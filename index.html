@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>打字机</title>
+    <style>
+      button {
+        cursor: pointer;
+      }
+      .msg {
+        height: 300px;
+        padding: 10px;
+        border: 1px solid red;
+      }
+      .btn {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="msg">还未发送任何请求</div>
+    <div class="btn">
+      <button id="webS">使用WebSocket</button>
+      <button id="sse">使用SSE</button>
+    </div>
+    <script>
+      const webS = document.getElementById('webS');
+      const sse = document.getElementById('sse');
+
+      webS.addEventListener('click', (e) => {
+        e.preventDefault();
+        webSFn();
+        console.log('webS');
+      });
+
+      sse.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('sse');
+      });
+
+      function webSFn() {
+        const ws = new WebSocket('ws://localhost:3001');
+
+        ws.addEventListener('open', function (event) {
+          console.log('Connection opened.');
+          // 在这里可以向服务端发送消息，例如：
+          ws.send('Hello, server!');
+        });
+
+        ws.addEventListener('message', function (event) {
+          console.log(`Received message: ${event.data}`);
+          // 在这里可以对服务端发送的消息进行处理
+        });
+
+        ws.addEventListener('close', function (event) {
+          console.log(`Connection closed with code ${event.code} and reason "${event.reason}".`);
+          // 在这里可以对连接关闭进行处理
+        });
+      }
+    </script>
+  </body>
+</html>
