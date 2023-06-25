@@ -8,7 +8,7 @@
       button {
         cursor: pointer;
       }
-      .msg {
+      #msg {
         height: 300px;
         padding: 10px;
         border: 1px solid red;
@@ -19,43 +19,73 @@
     </style>
   </head>
   <body>
-    <div class="msg">还未发送任何请求</div>
+    <div id="msg">还未发送任何请求</div>
     <div class="btn">
-      <button id="webS">使用WebSocket</button>
+      <button id="webSS">链接WebSocket</button>
+      <button id="webST">关闭WebSocket</button>
       <button id="sse">使用SSE</button>
     </div>
     <script>
-      const webS = document.getElementById('webS');
+      const msg = document.getElementById('msg');
+      const webSS = document.getElementById('webSS');
+      const webST = document.getElementById('webST');
       const sse = document.getElementById('sse');
+      let ws;
 
-      webS.addEventListener('click', (e) => {
+      webSS.addEventListener('click', (e) => {
         e.preventDefault();
         webSFn();
         console.log('webS');
       });
+      webST.addEventListener('click', (e) => {
+        e.preventDefault();
+        ws.close();
+        console.log('webST');
+      });
 
       sse.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log('sse');
+        SSE();
       });
 
       function webSFn() {
-        const ws = new WebSocket('ws://localhost:3001');
+        ws = new WebSocket('ws://localhost:3001');
 
         ws.addEventListener('open', function (event) {
           console.log('Connection opened.');
           // 在这里可以向服务端发送消息，例如：
-          ws.send('Hello, server!');
+          ws.send('打字机');
         });
 
         ws.addEventListener('message', function (event) {
-          console.log(`Received message: ${event.data}`);
-          // 在这里可以对服务端发送的消息进行处理
+          msg.innerHTML = ''; // 清空默认内容
+          msg.innerHTML += event.data;
         });
 
         ws.addEventListener('close', function (event) {
-          console.log(`Connection closed with code ${event.code} and reason "${event.reason}".`);
           // 在这里可以对连接关闭进行处理
+        });
+      }
+
+      function SSE() {
+        const eventSource = new EventSource('/sse');
+        eventSource.addEventListener('exampleSSE', (event) => {
+          console.log(event.data);
+          if (msg.innerHTML === '还未发送任何请求') {
+            msg.innerHTML = '';
+            msg.innerHTML += event.data;
+          } else {
+            msg.innerHTML += event.data;
+          }
+        });
+
+        eventSource.addEventListener('open', function (event) {
+          console.log('Connection opened.');
+        });
+
+        eventSource.addEventListener('error', function (event) {
+          console.error('Error occurred:', event);
+          // 在这里可以对连接错误进行处理
         });
       }
     </script>
